@@ -1,10 +1,10 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
-// const url = "https://www.xsnvshen.com/album/35382";
+const url = "https://www.xsnvshen.com/album/32689";
 // const url = "https://www.baidu.com/";
-const url = "https://www.iban.com/exchange-rates";
-'\n<a href="/" title="IBAN Home">\n<img src="/images/logo.png" alt="IBAN Logo" width="170" height="75">\n</a>\n'
+// const url = "https://www.iban.com/exchange-rates";
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 fetchData(url).then(async (res) => {
     const html = res.data;
     const $ = cheerio.load(html);
@@ -13,10 +13,10 @@ fetchData(url).then(async (res) => {
     //     let img = $(this).html();
     //     console.log(img);
     // });
-    const statsTable = $('.logo img');
-    
-    const body = statsTable[0].attribs.src
-    // console.log(body)
+    // const statsTable = $('.logo img');
+    const body = $('body .showbox a')[0]
+    // const body = statsTable[0].attribs.src
+    console.log(body)
     // let example_image_1 = await download_image('https://www.iban.com/images/logo.png', 'example-1.png')
 
     // let example_image_1 = await download_image('https://example.com/test-1.png', 'example-1.png');
@@ -40,6 +40,11 @@ async function fetchData(url){
     console.log("Crawling data...")
     // make http call to url
     let response = await axios(url, {
+      // withCredentials: true,
+      headers: {
+        cookie: '__cfduid=d880a485869d27a51e898dff80f91bf0d1615384170',
+        referer: 'https://www.xsnvshen.com/album/32689'
+      }
       // proxy: {
       //   protocol: 'http',
       //   host: "127.0.0.1",
@@ -87,9 +92,9 @@ const download_image = (url, image_path) => {
   
 
   
-(async () => {
-  let example_image_1 = await download_image('https://example.com/test-1.png', 'example-1.png');
+// (async () => {
+//   let example_image_1 = await download_image('https://img.xsnvshen.com/album/22162/32689/000.jpg', 'example-1.png');
 
-  console.log('example_image_1', example_image_1); // true
+//   console.log('example_image_1', example_image_1); // true
 
-})();
+// })();
