@@ -6,6 +6,8 @@ const url = "http://127.0.0.1:8080/xsnv.html";
 // const url = "https://www.baidu.com/";
 // const url = "https://www.iban.com/exchange-rates";
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+const modelName = '杨晨晨'
+
 
 fetchData(url).then(
   (res) => {
@@ -20,9 +22,16 @@ fetchData(url).then(
 
 function parseData(html) {
   const $html = cheerio.load(html)
-  const aList = $html('body .showbox a')
   // 过滤前 aList length 708
-  console.log(aList)
+  // has title 344
+  const aList = $html('body .showbox a[title]')
+  const title = $html('.swp-tit.layout a').text()
+  // 69
+  const total = parseInt($html('.swpt-time#time > span:first').text().replace(/[^0-9]/ig,""))
+  // '//img.xsnvshen.com/album/22162/32689/000.jpg' 000-068
+  const imgSrc = $html('#bigImg')[0].attribs.src
+  const img1 = imgSrc.substring(0, imgSrc.length - 7)
+  console.log(img1)
   
   // const statsTable = $('.table.table-bordered.table-hover.downloads > tbody > tr');
   // console.log(statsTable)
@@ -48,20 +57,25 @@ function fetchData(url) {
   })
 }
 
-/* ============================================================
-  Function: Download Image
-============================================================ */
-
-const download_image = (url, image_path) => {
+/**
+ * @params
+ * @url 图片地址
+ * @path 输出文件地址
+ * @filename 输出文件名
+ */
+const download_image = (url, path, filename) => {
+  if (!fs.existsSync(path)){
+    fs.mkdirSync(path);
+  }
   axios({
     url,
     responseType: 'stream',
   }).then(
     response => {
-      console.log('response', response)
+      // console.log('response', response)
       return new Promise((resolve, reject) => {
         response.data
-          .pipe(fs.createWriteStream(image_path))
+          .pipe(fs.createWriteStream(path + filename))
           .on('finish', () => resolve())
           .on('error', e => reject(e));
       })
@@ -80,9 +94,6 @@ const download_image = (url, image_path) => {
 
 
 
-// (async () => {
-//   let example_image_1 = await download_image('https://img.xsnvshen.com/album/22162/32689/000.jpg', 'example-1.png');
-
-//   console.log('example_image_1', example_image_1); // true
-
-// })();
+(() => {
+  download_image('https://nodejs.org/static/images/logo.svg', '../杨晨晨/test/', 'logo.svg');
+})();
