@@ -1,8 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
-// const url = "https://www.xsnvshen.com/album/32689";
-const url = "http://127.0.0.1:8080/xsnv.html";
+const url = "https://www.xsnvshen.com/album/32689";
+// const url = "http://127.0.0.1:8080/xsnv.html";
 // const url = "https://www.baidu.com/";
 // const url = "https://www.iban.com/exchange-rates";
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
@@ -30,8 +30,15 @@ function parseData(html) {
   const total = parseInt($html('.swpt-time#time > span:first').text().replace(/[^0-9]/ig,""))
   // '//img.xsnvshen.com/album/22162/32689/000.jpg' 000-068
   const imgSrc = $html('#bigImg')[0].attribs.src
-  const img1 = imgSrc.substring(0, imgSrc.length - 7)
-  console.log(img1)
+  const imgWithoutFilename = imgSrc.substring(0, imgSrc.length - 7)
+  // download_image('https//img.xsnvshen.com/album/22162/32689/068.jpg', '../杨晨晨/test/', '068.jpg');
+
+  for (let index = 0; index < total; index++) {
+    const num = index.toString().padStart(3, '0');
+    const imgFilename = `${num}.jpg`
+    download_image(`https:${imgWithoutFilename}${imgFilename}`, `../${modelName}/${title}/`, imgFilename);
+  }
+
   
   // const statsTable = $('.table.table-bordered.table-hover.downloads > tbody > tr');
   // console.log(statsTable)
@@ -41,14 +48,16 @@ function parseData(html) {
   // });
 }
 
-function fetchData(url) {
+function fetchData(url, opt) {
   // make http call to url
-  return axios(url, {
+  return axios({
+    url,
     // withCredentials: true,
     headers: {
       cookie: '__cfduid=dd807ab20e941f8fceded394d1a7a9e0f1617693774',
       referer: 'https://www.xsnvshen.com/album/32689'
     },
+    ...opt
     // proxy: {
     //   protocol: 'https',
     //   host: "127.0.0.1",
@@ -65,27 +74,34 @@ function fetchData(url) {
  */
 const download_image = (url, path, filename) => {
   if (!fs.existsSync(path)){
-    fs.mkdirSync(path);
+    fs.mkdirSync(path, { recursive: true });
   }
-  axios({
+  fetchData(
     url,
-    responseType: 'stream',
-  }).then(
+    {responseType: 'stream',}
+  ).then(
     response => {
       // console.log('response', response)
       return new Promise((resolve, reject) => {
         response.data
           .pipe(fs.createWriteStream(path + filename))
-          .on('finish', () => resolve())
+          .on('finish', () => {
+            // console.log('下载成功：', filename)
+            resolve()
+          })
           .on('error', e => reject(e));
       })
     },
     error => {
-      console.log('error', error.response.status)
-      const status = error.response.status
-      if (status === 404) {
-        /* do nothing */
+      console.log('下载失败：', filename)
+      const response = error.response
+      if(response && response.status){
+        console.log('失败状态码：', response.status, '失败messgae:', response.statusText)
+        if (status === 404) {
+          /* do nothing */
+        }
       }
+      
     }
   ).catch(err => {
     console.log('err', err)
@@ -94,6 +110,6 @@ const download_image = (url, path, filename) => {
 
 
 
-(() => {
-  download_image('https://nodejs.org/static/images/logo.svg', '../杨晨晨/test/', 'logo.svg');
-})();
+// (() => {
+//   download_image('//img.xsnvshen.com/album/22162/32689/068.jpg', '../杨晨晨/test/', '068.jpg');
+// })();
