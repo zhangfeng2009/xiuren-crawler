@@ -18,7 +18,7 @@ fetchData(url).then(
     }
   },
   err => {
-    console.log(err)
+    console.log('error3')
   }
 )
 
@@ -28,7 +28,7 @@ async function getAllUrl(html){
   // has title 344
   const aList = $html('body .showbox a[title]')
   const nList = aList.slice(0, 2)
-  for (const node of nList) {
+  for (const node of aList) {
     // console.log(node)
     await fetchData(www + node.attribs.href).then(
       async (res) => {
@@ -37,7 +37,7 @@ async function getAllUrl(html){
         }
       },
       err => {
-        console.log(err)
+        console.log('error2')
       }
     )
   }
@@ -56,7 +56,7 @@ async function parsePage(html) {
   const imgWithoutFilename = imgSrc.substring(0, imgSrc.length - 7)
 
   const path = `${rootPath}/${modelName}/${title}/`
-  mkdir(path)
+  if(mkdir(path)){return}
   const queue = []
   for (let index = 0; index < total; index++) {
     const num = index.toString().padStart(3, '0');
@@ -71,7 +71,7 @@ async function parsePage(html) {
   for (const subQueue of twoDimenQueue) {
     const pArr = subQueue.map((opt) => {
       return download_image(opt.url, path, opt.imgFilename, 5)
-      .then((res)=> res,(res)=>{console.log(res)})
+      .then((res)=> res,(res)=>{console.log('error1')})
     })
     await Promise.all(pArr)
   }
@@ -79,9 +79,11 @@ async function parsePage(html) {
 }
 
 function mkdir(path) {
-  if (!fs.existsSync(path)) {
+  const exist = fs.existsSync(path)
+  if (!exist) {
     fs.mkdirSync(path, { recursive: true });
   }
+  return exist
 }
 
 /*
