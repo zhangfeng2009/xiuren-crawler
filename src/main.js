@@ -1,18 +1,20 @@
 const { download_image, fetchData } = require('./fetch');
 const cheerio = require('cheerio');
 const fs = require('fs');
+const www = 'https://www.xsnvshen.com'
 const url = "https://www.xsnvshen.com/album/32689";
 // const url = "http://127.0.0.1:8080/xsnv.html";
 // const url = "https://www.baidu.com/";
 // const url = "https://www.iban.com/exchange-rates";
 const modelName = '杨晨晨'
 const rootPath = '..'
+const multiPeer = 50
 
 
 fetchData(url).then(
   (res) => {
     if (res.status === 200) {
-      parsePage(res.data)
+      getAllUrl(res.data)
     }
   },
   err => {
@@ -20,11 +22,32 @@ fetchData(url).then(
   }
 )
 
-async function parsePage(html) {
+async function getAllUrl(html){
   const $html = cheerio.load(html)
   // 过滤前 aList length 708
   // has title 344
   const aList = $html('body .showbox a[title]')
+  const nList = aList.slice(0, 2)
+  for (const node of nList) {
+    // console.log(node)
+    await fetchData(www + node.attribs.href).then(
+      async (res) => {
+        if (res.status === 200) {
+          await parsePage(res.data)
+        }
+      },
+      err => {
+        console.log(err)
+      }
+    )
+  }
+  // console.log(aList)
+}
+
+async function parsePage(html) {
+  const $html = cheerio.load(html)
+  // 过滤前 aList length 708
+  // has title 344
   const title = $html('.swp-tit.layout a').text()
   // 69
   const total = parseInt($html('.swpt-time#time > span:first').text().replace(/[^0-9]/ig, ""))
@@ -44,7 +67,7 @@ async function parsePage(html) {
     })
     
   }
-  const twoDimenQueue = sliceArray(queue, 50)
+  const twoDimenQueue = sliceArray(queue, multiPeer)
   for (const subQueue of twoDimenQueue) {
     const pArr = subQueue.map((opt) => {
       return download_image(opt.url, path, opt.imgFilename, 5)
