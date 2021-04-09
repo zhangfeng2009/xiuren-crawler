@@ -1,6 +1,12 @@
 const axios = require('axios');
 const fs = require('fs');
+const config = require('../config')
 
+/**
+ * 可能状态码 
+ * 524 服务器超时
+ */
+const retryCodeList = [524]
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
 /**
@@ -20,12 +26,10 @@ process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
     {responseType: 'stream',}
   ).then(
     response => {
-      // console.log('response', response)
       return new Promise((resolve, reject) => {
         response.data
           .pipe(fs.createWriteStream(path + filename))
           .on('finish', () => {
-            // console.log('下载成功：', filename)
             resolve(1)
           })
           .on('error', e => reject(e));
@@ -35,38 +39,35 @@ process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
       console.log('下载失败：', filename)
       const response = error.response
       if(response && response.status){
-        /**
-         * 可能状态码 524 服务器超时
-         */
-        console.log(`失败状态码：${response.status} 失败信息:${response.statusText} 剩余重试次数：${retryLeft}`, )
-
-        if(retryLeft < 1){
+        
+        const statusCode = response.status
+        
+        console.log(`失败状态码：${statusCode} 失败信息:${response.statusText} 剩余重试次数：${retryLeft}`)
+        if(retryLeft > 1 && retryCodeList.indexOf(statusCode)){
           return download_image(url, path, filename, retryLeft - 1)
         }else{
           return response.status
         }
       }
-      console.log('未知错误：', error)
-      return error
+      if(error.code === 'ECONNRESET'){
+        console.log(`失败信息:${error.code} 剩余重试次数：${retryLeft}`)
+        if(retryLeft > 1){
+          return download_image(url, path, filename, retryLeft - 1)
+        }
+      }
+      console.log(`下载图片失败：${url}`)
     }
   )
 }
 
 function fetchData(url, opt) {
-  // make http call to url
   return axios({
     url,
-    // withCredentials: true,
     headers: {
-      cookie: '__cfduid=dd807ab20e941f8fceded394d1a7a9e0f1617693774',
-      referer: 'https://www.xsnvshen.com/album/32689'
+      cookie: config.cookie,
+      referer: config.referer
     },
     ...opt
-    // proxy: {
-    //   protocol: 'https',
-    //   host: "127.0.0.1",
-    //   port: 7890
-    // }
   })
 }
 
