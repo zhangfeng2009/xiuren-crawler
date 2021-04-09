@@ -38,7 +38,7 @@ process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
         /**
          * 可能状态码 524 服务器超时
          */
-        console.log('失败状态码：', response.status, '失败messgae:', response.statusText)
+        console.log(`失败状态码：${response.status} 失败信息:${response.statusText} 剩余重试次数：${retryLeft}`, )
 
         if(retryLeft < 1){
           return download_image(url, path, filename, retryLeft - 1)
