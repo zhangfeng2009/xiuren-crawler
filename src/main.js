@@ -21,8 +21,9 @@ async function getAllUrl(html){
   const aList = $html('body .showbox a[title]')
   const total = aList.length
   // const nList = aList.slice(0, 1)
-  aList.forEach(async (node, index) => {
-    console.log(`开始下载图集：(${index+1}/${total})`)
+  for (const [index, node] of Object.entries(aList)) {
+    const num = parseInt(index) + 1
+    console.log(`开始下载图集：(${num}/${total})`)
     await fetchData(config.www + node.attribs.href).then(
       async (res) => {
         if (res.status === 200) {
@@ -33,8 +34,9 @@ async function getAllUrl(html){
         console.log('获取页面出错：' + node.attribs.href)
       }
     )
-  });
-  for (const [index, node] of aList.entries()) {
-    
   }
+  // aList.forEach(async (node, index) => {
+    
+  // });
+
 }

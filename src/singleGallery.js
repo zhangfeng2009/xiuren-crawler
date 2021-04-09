@@ -26,7 +26,8 @@ async function parsePage(html) {
   const imgWithoutFilename = imgSrc.substring(0, imgSrc.length - 7)
 
   const path = `${config.downloadPath}/${config.modelName}/${title}/`
-  if(mkdir(path)){return}
+  // 如果文件夹存在则跳过
+  if(mkdir(path) && !config.rewrite){return}
 
   const queue = []
   for (let index = 0; index < total; index++) {

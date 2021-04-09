@@ -53,6 +53,8 @@ process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
         console.log(`失败信息:${error.code} 剩余重试次数：${retryLeft}`)
         if(retryLeft > 1){
           return download_image(url, path, filename, retryLeft - 1)
+        }else{
+          return error.code
         }
       }
       console.log(`下载失败：${url}`)
