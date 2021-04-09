@@ -6,6 +6,7 @@ const parsePage = require('./singleGallery')
 fetchData(config.url).then(
   (res) => {
     if (res.status === 200) {
+      console.log('开始解析根页面')
       getAllUrl(res.data)
     }
   },
@@ -18,8 +19,10 @@ async function getAllUrl(html){
   const $html = cheerio.load(html)
   // 获取当前模特所有图集链接
   const aList = $html('body .showbox a[title]')
+  const total = aList.length
   // const nList = aList.slice(0, 1)
-  for (const node of aList) {
+  aList.forEach(async (node, index) => {
+    console.log(`开始下载图集：(${index+1}/${total})`)
     await fetchData(config.www + node.attribs.href).then(
       async (res) => {
         if (res.status === 200) {
@@ -30,5 +33,8 @@ async function getAllUrl(html){
         console.log('获取页面出错：' + node.attribs.href)
       }
     )
+  });
+  for (const [index, node] of aList.entries()) {
+    
   }
 }
