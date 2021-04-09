@@ -36,7 +36,7 @@ process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
       })
     },
     error => {
-      console.log('下载失败：', filename)
+      console.log('单次失败：', url)
       const response = error.response
       if(response && response.status){
         
@@ -49,13 +49,13 @@ process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
           return response.status
         }
       }
-      if(error.code === 'ECONNRESET'){
+      if(error.code === 'ECONNRESET' || 'ETIMEDOUT'){
         console.log(`失败信息:${error.code} 剩余重试次数：${retryLeft}`)
         if(retryLeft > 1){
           return download_image(url, path, filename, retryLeft - 1)
         }
       }
-      console.log(`下载图片失败：${url}`)
+      console.log(`下载失败：${url}`)
     }
   )
 }
