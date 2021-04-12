@@ -20,9 +20,10 @@ async function getAllUrl(html){
   // 获取当前模特所有图集链接
   const aList = $html('body .showbox a[title]')
   const total = aList.length
-  // const nList = aList.slice(0, 1)
+  // const nList = aList.slice(345, 347)
   for (const [index, node] of Object.entries(aList)) {
     const num = parseInt(index) + 1
+    if(isNaN(num)){return}
     console.log(`开始下载图集：(${num}/${total})`)
     await fetchData(config.www + node.attribs.href).then(
       async (res) => {
@@ -35,8 +36,5 @@ async function getAllUrl(html){
       }
     )
   }
-  // aList.forEach(async (node, index) => {
-    
-  // });
-
+  console.log('全部下载结束，程序退出')
 }

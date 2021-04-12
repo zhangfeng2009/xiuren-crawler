@@ -3,18 +3,6 @@ const cheerio = require('cheerio');
 const fs = require('fs');
 const config = require('../config')
 
-
-fetchData(config.url).then(
-  (res) => {
-    if (res.status === 200) {
-      parsePage(res.data)
-    }
-  },
-  err => {
-    console.log('获取页面出错')
-  }
-)
-
 async function parsePage(html) {
   const $html = cheerio.load(html)
   const title = $html('.swp-tit.layout a').text()
