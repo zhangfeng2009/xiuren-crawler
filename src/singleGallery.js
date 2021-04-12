@@ -10,7 +10,9 @@ async function parsePage(html) {
   // 获取该图集总图片数
   const total = parseInt($html('.swpt-time#time > span:first').text().replace(/[^0-9]/ig, ""))
   // 获取图片 url
-  const imgSrc = $html('#bigImg')[0].attribs.src
+  const bigimg = $html('#bigImg')[0]
+  if(!bigimg){return}
+  const imgSrc = bigimg.attribs.src
   const imgWithoutFilename = imgSrc.substring(0, imgSrc.length - 7)
 
   const path = `${config.downloadPath}/${config.modelName}/${title}/`

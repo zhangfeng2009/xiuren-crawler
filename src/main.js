@@ -20,10 +20,10 @@ async function getAllUrl(html){
   // 获取当前模特所有图集链接
   const aList = $html('body .showbox a[title]')
   const total = aList.length
-  // const nList = aList.slice(345, 347)
+  // const nList = aList.slice(100, 103)
   for (const [index, node] of Object.entries(aList)) {
     const num = parseInt(index) + 1
-    if(isNaN(num)){return}
+    if(isNaN(num) || !node.attribs){return}
     console.log(`开始下载图集：(${num}/${total})`)
     await fetchData(config.www + node.attribs.href).then(
       async (res) => {
