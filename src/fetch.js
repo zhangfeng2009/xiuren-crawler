@@ -36,28 +36,9 @@ process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
       })
     },
     error => {
-      console.log('单次失败：', url)
-      const response = error.response
-      if(response && response.status){
-        
-        const statusCode = response.status
-        
-        console.log(`失败状态码：${statusCode} 失败信息:${response.statusText} 剩余重试次数：${retryLeft}`)
-        if(retryLeft > 1 && retryCodeList.indexOf(statusCode)){
-          return download_image(url, path, filename, retryLeft - 1)
-        }else{
-          return response.status
-        }
+      if(handlerError(error, url, retryLeft)) {
+        download_image(url, path, filename, retryLeft - 1)
       }
-      if(error.code === 'ECONNRESET' || 'ETIMEDOUT'){
-        console.log(`失败信息:${error.code} 剩余重试次数：${retryLeft}`)
-        if(retryLeft > 1){
-          return download_image(url, path, filename, retryLeft - 1)
-        }else{
-          return error.code
-        }
-      }
-      console.log(`下载失败：${url}`)
     }
   )
 }
@@ -73,4 +54,30 @@ function fetchData(url, opt) {
   })
 }
 
-module.exports = {download_image, fetchData}
+/**
+ * @return
+ * @true 应当继续重试
+ * @false 失败，停止重试
+ */
+function handlerError(error, url, retryLeft) {
+  const response = error.response
+  if(retryLeft <= 1){
+    console.log(`失败：${url}`)
+    return false
+  }
+  if(response && response.status){ 
+    const statusCode = response.status
+    console.log(`失败状态码：${statusCode} 失败信息:${response.statusText} 剩余重试次数：${retryLeft}`)
+    if(retryCodeList.indexOf(statusCode)){
+      return true
+    }
+  }
+  if(error.code === 'ECONNRESET' || 'ETIMEDOUT'){
+    console.log(`失败信息:${error.code} 剩余重试次数：${retryLeft}`)
+    return true
+  }
+  console.log('未知失败：', url)
+  return false
+}
+
+module.exports = {download_image, fetchData, handlerError}

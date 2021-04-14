@@ -1,4 +1,4 @@
-const { fetchData } = require('./fetch');
+const { fetchData, handlerError } = require('./fetch');
 const cheerio = require('cheerio');
 const config = require('../config')
 const parsePage = require('./singleGallery')
@@ -25,16 +25,22 @@ async function getAllUrl(html){
     const num = parseInt(index) + 1
     if(isNaN(num) || !node.attribs){return}
     console.log(`开始下载图集：(${num}/${total})`)
-    await fetchData(config.www + node.attribs.href).then(
-      async (res) => {
-        if (res.status === 200) {
-          await parsePage(res.data)
-        }
-      },
-      err => {
-        console.log('获取页面出错：' + node.attribs.href)
-      }
-    )
+    await fetchPage(config.www + node.attribs.href, 5)
   }
   console.log('全部下载结束，程序退出')
+}
+
+function fetchPage(url, retryLeft){
+  return fetchData(url).then(
+    async (res) => {
+      if (res.status === 200) {
+        await parsePage(res.data)
+      }
+    },
+    error => {
+      if(handlerError(error, url, retryLeft)){
+        fetchPage(url, retryLeft - 1)
+      }
+    }
+  )
 }
